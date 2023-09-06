@@ -2,11 +2,27 @@
 #include <stdio.h>
 
 /**
-* error_file - checks if files can be opened.
-* @file_from: file_from.
-* @file_to: file_to.
-* @argv: arguments vector.
-* Return: no return.
+* error_file __ This function checks if files can be successfull opened.
+*
+* @file_from: file descriptor for source file.
+* @file_to: file descriptor for destination file.
+* @argv: arguments vector which contains command-line arguments.
+*
+* this function is responsible for verifying whether specified source
+* destination files can be opened for reading & writing, respectively
+* either file cannot be opened it prints an error message to standard
+* error stream [stderr] indicating problem & exits program
+* appropriate exit the code
+*
+* @file_from: the file descriptor for source file if it is -1 an error
+* message is printed stating that reading from source file
+* argv[1] is not possible & program exits with exit the code (98)
+*
+* @file_to: the file descriptor for destination file if it is -1, an error
+* message is printed stating that writing to destination file
+* argv[2] is not possible & program exits with exit the code (99)
+*
+* return: this function does not return value
 */
 void error_file(int file_from, int file_to, char *argv[])
 {
@@ -23,11 +39,34 @@ void error_file(int file_from, int file_to, char *argv[])
 }
 
 /**
-* main - check the code for Holberton School students.
-* @argc: number of arguments.
-* @argv: arguments vector.
-* Return: Always 0.
-*/
+ * main __ the main entry point of file copying program
+ *
+ * @argc: number of command line arguments
+ * @argv: an array of strings containing command line arguments
+ *
+ * this is main function of program designed to copy contents of one
+ * file to another it takes 2 command line arguments
+ * copied from & destination file to which content will be written
+ * function performs following steps
+ *
+ * Step 1. checks if correct number of arguments (3) have been provided if not
+ *    it prints an error message to stderr indicating correct usage
+ *    exits with exit the code (97)
+ *
+ * Step 2. opens source file specified in argv[1] for reading
+ *    destination file specified in argv[2] for writing creating the
+ *    creating destination file if it does not exist if either file cannot be opened
+ *    the "error_file" function is called to handle error
+ *
+ *Step 3. reads source file in chunks of (1024) bytes 
+ *    rites them to destination file until entire file is copied
+ *
+ * Step 4. closes both source & destination files if either close operation
+ *    fails it prints an error message to (stderr) indicating the specific file
+ *    descriptor that couldn't be closed & exits with exit code (100)
+ *
+ * return: this function returns (0) to indicate successful execution
+ */
 int main(int argc, char *argv[])
 {
 	int file_from, file_to, err_close;
