@@ -1,79 +1,88 @@
 #include "main.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 /**
- * handleFileErrors - checks for file-related errors.
- * @sourceFileDescriptor: source file descriptor.
- * @destinationFileDescriptor: destination file descriptor.
- * @arguments: command line arguments.
- * Return: no return.
- */
-void handleFileErrors(int sourceFileDescriptor,
-	int destinationFileDescriptor, char *arguments[])
+* error_file - Checks if files can be opened and handles errors.
+* @file_from: File descriptor of the source file.
+* @file_to: File descriptor of the destination file.
+* @argv: Command-line arguments vector.
+*
+* Description: This function checks if the specified files can be opened.
+* If not, it prints an error message and exits with the corresponding error code.
+*/
+void error_file(int file_from, int file_to, char *argv[])
 {
-	if (sourceFileDescriptor == -1)
-	}
-	dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", arguments[1]);
-	exit(98);
-	}
-if (destinationFileDescriptor == -1)
+if (file_from == -1)
 {
-dprintf(STDERR_FILENO, "Error: Can't write to %s\n", arguments[2]);
+dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", argv[1]);
+exit(98);
+}
+if (file_to == -1)
+{
+dprintf(STDERR_FILENO, "Error: Can't write to %s\n", argv[2]);
 exit(99);
-	}
+}
 }
 
 /**
- * main - Entry point for the file copy program.
- * @argc: Number of command line arguments.
- * @argv: Command line arguments.
- * Return: Always 0.
- */
+* main - Entry point of the program.
+* @argc: Number of command-line arguments.
+* @argv: Command-line arguments vector.
+*
+* Return: Always returns 0.
+*
+* Description: This program copies the contents of one file to another file.
+* It takes two command-line arguments: the source file and the destination file.
+* If the number of arguments is incorrect, it prints a usage message and exits.
+*/
 int main(int argc, char *argv[])
 {
-	int sourceFileDescriptor, destinationFileDescriptor, closeStatus;
-	ssize_t bytesRead, bytesWritten;
-	char buffer[1024];
+int file_from, file_to, err_close;
+ssize_t nchars, nwr;
+char buf[1024];
 
-	if (argc != 3)
-	{
-	dprintf(STDERR_FILENO, "Usage: file_copy source_file dest_file\n");
-	exit(97);
-	}
+// Check the number of command-line arguments
+if (argc != 3)
+{
+dprintf(STDERR_FILENO, "%s\n", "Usage: cp file_from file_to");
+exit(97);
+}
 
-	sourceFileDescriptor = open(argv[1],
-	O_RDONLY);
-	destinationFileDescriptor = open(argv[2],
-	O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0664);
-	handleFileErrors(sourceFileDescriptor, destinationFileDescriptor, argv);
+// Open the source file for reading and the destination file for writing
+file_from = open(argv[1], O_RDONLY);
+file_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0664);
 
-	bytesRead = 1024;
-	while (bytesRead == 1024)
-	{
-	bytesRead = read(sourceFileDescriptor, buffer, 1024);
-	if (bytesRead == -1)
-	handleFileErrors(-1, 0, argv);
-	bytesWritten = write(destinationFileDescriptor, buffer, bytesRead);
-	if (bytesWritten == -1)
-	handleFileErrors(0, -1, argv);
-	}
+// Check if file openings were successful
+error_file(file_from, file_to, argv);
 
-	closeStatus = close(sourceFileDescriptor);
-	if (closeStatus == -1)
-	{
-	dprintf(STDERR_FILENO, "Error: Can't close source file descriptor %d\n",
-	sourceFileDescriptor);
-	exit(100);
-	}
+// Initialize the character count to read
+nchars = 1024;
 
-	closeStatus = close(destinationFileDescriptor);
-	if (closeStatus == -1)
-	{
-	dprintf(STDERR_FILENO, "Error: Can't close destination file descriptor %d\n",
-	destinationFileDescriptor);
-	exit(100);
-	}
+// Loop to read and write file contents
+while (nchars == 1024)
+{
+nchars = read(file_from, buf, 1024);
+if (nchars == -1)
+error_file(-1, 0, argv);
+nwr = write(file_to, buf, nchars);
+if (nwr == -1)
+error_file(0, -1, argv);
+}
 
-	return (0);
+// Close both files and check for errors
+err_close = close(file_from);
+if (err_close == -1)
+{
+dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", file_from);
+exit(100);
+}
+
+err_close = close(file_to);
+if (err_close == -1)
+{
+dprintf(STDERR_FILENO, "Error: Can't close fd %d\n", file_to);
+exit(100);
+}
+
+return( 0);
 }
