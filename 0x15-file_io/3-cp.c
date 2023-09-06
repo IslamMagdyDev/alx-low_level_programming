@@ -1,79 +1,71 @@
-#include "main.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 /**
- * handleFileErrors - checks for file-related errors.
- * @sourceFileDescriptor: source file descriptor.
- * @destinationFileDescriptor: destination file descriptor.
- * @arguments: command line arguments.
- * Return: no return.
- */
-void handleFileErrors(int sourceFileDescriptor,
-	int destinationFileDescriptor, char *arguments[])
+* check_file_open - checks if files can be opened.
+* @file_from: file_from.
+* @file_to: file_to.
+* @argv: arguments vector.
+* Return: no return.
+*/
+void check_file_open(int file_from, int file_to, char *argv[])
 {
-	if (sourceFileDescriptor == -1)
+	if (file_from == -1)
+	{
+		printf("Error: Can't read from file %s\n", argv[1]);
+		exit(98);
 	}
-	dprintf(STDERR_FILENO, "Error: Can't read from file %s\n", arguments[1]);
-	exit(98);
-	}
-if (destinationFileDescriptor == -1)
-{
-dprintf(STDERR_FILENO, "Error: Can't write to %s\n", arguments[2]);
-exit(99);
+	if (file_to == -1)
+	{
+		printf("Error: Can't write to %s\n", argv[2]);
+		exit(99);
 	}
 }
 
 /**
- * main - Entry point for the file copy program.
- * @argc: Number of command line arguments.
- * @argv: Command line arguments.
- * Return: Always 0.
- */
+* main - check the code for Holberton School students.
+* @argc: number of arguments.
+* @argv: arguments vector.
+* Return: Always 0.
+*/
 int main(int argc, char *argv[])
 {
-	int sourceFileDescriptor, destinationFileDescriptor, closeStatus;
-	ssize_t bytesRead, bytesWritten;
-	char buffer[1024];
+	int file_from, file_to, err_close;
+	ssize_t nchars, nwr;
+	char buf[1024];
 
 	if (argc != 3)
 	{
-	dprintf(STDERR_FILENO, "Usage: file_copy source_file dest_file\n");
-	exit(97);
+		printf("Usage: cp file_from file_to\n");
+		exit(97);
 	}
 
-	sourceFileDescriptor = open(argv[1],
-	O_RDONLY);
-	destinationFileDescriptor = open(argv[2],
-	O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0664);
-	handleFileErrors(sourceFileDescriptor, destinationFileDescriptor, argv);
+	file_from = open(argv[1], O_RDONLY);
+	file_to = open(argv[2], O_CREAT | O_WRONLY | O_TRUNC | O_APPEND, 0664);
+	check_file_open(file_from, file_to, argv);
 
-	bytesRead = 1024;
-	while (bytesRead == 1024)
+	nchars = 1024;
+	while (nchars == 1024)
 	{
-	bytesRead = read(sourceFileDescriptor, buffer, 1024);
-	if (bytesRead == -1)
-	handleFileErrors(-1, 0, argv);
-	bytesWritten = write(destinationFileDescriptor, buffer, bytesRead);
-	if (bytesWritten == -1)
-	handleFileErrors(0, -1, argv);
+		nchars = read(file_from, buf, 1024);
+		if (nchars == -1)
+			check_file_open(-1, 0, argv);
+		nwr = write(file_to, buf, nchars);
+		if (nwr == -1)
+			check_file_open(0, -1, argv);
 	}
 
-	closeStatus = close(sourceFileDescriptor);
-	if (closeStatus == -1)
+	err_close = close(file_from);
+	if (err_close == -1)
 	{
-	dprintf(STDERR_FILENO, "Error: Can't close source file descriptor %d\n",
-	sourceFileDescriptor);
-	exit(100);
+		printf("Error: Can't close fd %d\n", file_from);
+		exit(100);
 	}
 
-	closeStatus = close(destinationFileDescriptor);
-	if (closeStatus == -1)
+	err_close = close(file_to);
+	if (err_close == -1)
 	{
-	dprintf(STDERR_FILENO, "Error: Can't close destination file descriptor %d\n",
-	destinationFileDescriptor);
-	exit(100);
+		printf("Error: Can't close fd %d\n", file_from);
+		exit(100);
 	}
-
 	return (0);
 }
