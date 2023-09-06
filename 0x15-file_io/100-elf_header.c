@@ -1,5 +1,10 @@
-#include "elf_header_reader.h"
+#include <elf.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /**
 * verifyElfFile - Checks if a file is a valid ELF file.
